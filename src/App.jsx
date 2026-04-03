@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Dumbbell, Home, Save, Sparkles } from 'lucide-react'
+import { BarChart3, CheckCircle2, Dumbbell, Home, Save } from 'lucide-react'
 import Header from './components/Header'
 import SettingsPanel from './components/SettingsPanel'
 import HomeView from './components/HomeView'
@@ -8,9 +8,9 @@ import ExerciseCard from './components/ExerciseCard'
 import ExerciseHistoryPanel from './components/ExerciseHistoryPanel'
 import AnalyticsView from './components/AnalyticsView'
 import { EXERCISES, MOVIE_QUOTES, STARTER_STEPS, DEFAULT_SETTINGS } from './lib/exercises'
-import { createId, defaultSet, getStored, persist } from './lib/storage'
+import { createId, defaultSet, getStored, getStoredTemplates, persist, persistTemplates, STORAGE_KEYS } from './lib/storage'
 import { getAnalytics, getExerciseHistory, getExerciseTint, getSuggestion } from './lib/analytics'
-import { CheckCircle2 } from 'lucide-react'
+import { STARTER_TEMPLATES } from './lib/templates'
 
 export default function App() {
   const [entries, setEntries] = useState([])
@@ -27,16 +27,19 @@ export default function App() {
   const [expandedEntryId, setExpandedEntryId] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
   const [selectedExerciseName, setSelectedExerciseName] = useState('')
+  const [customTemplates, setCustomTemplates] = useState([])
 
   useEffect(() => {
-    setEntries(getStored('lean-tracker-current', []))
-    setHistory(getStored('lean-tracker-history', []))
-    setSettings(getStored('lean-tracker-settings', DEFAULT_SETTINGS))
+    setEntries(getStored(STORAGE_KEYS.current, []))
+    setHistory(getStored(STORAGE_KEYS.history, []))
+    setSettings(getStored(STORAGE_KEYS.settings, DEFAULT_SETTINGS))
+    setCustomTemplates(getStoredTemplates())
   }, [])
 
-  useEffect(() => persist('lean-tracker-current', entries), [entries])
-  useEffect(() => persist('lean-tracker-history', history), [history])
-  useEffect(() => persist('lean-tracker-settings', settings), [settings])
+  useEffect(() => persist(STORAGE_KEYS.current, entries), [entries])
+  useEffect(() => persist(STORAGE_KEYS.history, history), [history])
+  useEffect(() => persist(STORAGE_KEYS.settings, settings), [settings])
+  useEffect(() => persistTemplates(customTemplates), [customTemplates])
 
   const filteredExercises = useMemo(() => {
     const lower = query.toLowerCase()
@@ -57,6 +60,11 @@ export default function App() {
     const muscles = [...new Set(entries.map((entry) => entry.muscle))].filter(Boolean)
     return { totalExercises, totalSets, muscles }
   }, [entries])
+
+  const completedExercises = useMemo(
+    () => entries.filter((entry) => entry.sets.length > 0 && entry.sets.every((set) => set.done)).length,
+    [entries]
+  )
 
   const suggestion = useMemo(() => getSuggestion(history, entries), [history, entries])
   const analytics = useMemo(() => getAnalytics(history), [history])
@@ -84,6 +92,32 @@ export default function App() {
     if (!selectedExerciseName) setSelectedExerciseName(exercise.name)
   }
 
+  const applyTemplate = (template) => {
+    setEntries((prev) => {
+      const existingNames = new Set(prev.map((entry) => entry.name))
+      const additions = template.exercises
+        .map((exerciseName) => EXERCISES.find((exercise) => exercise.name === exerciseName))
+        .filter(Boolean)
+        .filter((exercise) => !existingNames.has(exercise.name))
+        .map((exercise) => ({ id: createId(), ...exercise, sets: [defaultSet()], note: '' }))
+
+      return [...prev, ...additions]
+    })
+  }
+
+  const saveCurrentTemplate = (name, exerciseNames) => {
+    setCustomTemplates((prev) => {
+      const deduped = exerciseNames.filter((exercise, index) => exerciseNames.indexOf(exercise) === index)
+      const nextTemplate = { name, exercises: deduped, source: 'custom' }
+      const remaining = prev.filter((template) => template.name.toLowerCase() !== name.toLowerCase())
+      return [nextTemplate, ...remaining]
+    })
+  }
+
+  const deleteTemplate = (templateName) => {
+    setCustomTemplates((prev) => prev.filter((template) => template.name !== templateName))
+  }
+
   const quickAddSet = (entryId) => {
     setEntries((prev) => prev.map((entry) => {
       if (entry.id !== entryId) return entry
@@ -92,6 +126,25 @@ export default function App() {
         ? { ...defaultSet(), weight: lastSet.weight || '', reps: lastSet.reps || '' }
         : { ...defaultSet(), duration: lastSet.duration || '', distance: lastSet.distance || '' }
       return { ...entry, sets: [...entry.sets, copied] }
+    }))
+  }
+
+  const copyPreviousSetValues = (entryId, setIndex) => {
+    if (setIndex < 1) return
+    setEntries((prev) => prev.map((entry) => {
+      if (entry.id !== entryId) return entry
+      const previousSet = entry.sets[setIndex - 1]
+      if (!previousSet) return entry
+
+      return {
+        ...entry,
+        sets: entry.sets.map((set, index) => {
+          if (index !== setIndex) return set
+          return entry.category === 'Strength'
+            ? { ...set, weight: previousSet.weight || '', reps: previousSet.reps || '' }
+            : { ...set, duration: previousSet.duration || '', distance: previousSet.distance || '' }
+        }),
+      }
     }))
   }
 
@@ -115,6 +168,32 @@ export default function App() {
       if (entry.id !== entryId) return entry
       return { ...entry, sets: entry.sets.map((set, index) => index === setIndex ? { ...set, done: !set.done } : set) }
     }))
+  }
+
+  const completeSetAndNext = (entryId, setIndex) => {
+    let nextExpandedId = entryId
+
+    setEntries((prev) => {
+      const currentIndex = prev.findIndex((entry) => entry.id === entryId)
+      if (currentIndex < 0) return prev
+
+      const updated = prev.map((entry, index) => {
+        if (index !== currentIndex) return entry
+        return {
+          ...entry,
+          sets: entry.sets.map((set, idx) => (idx === setIndex ? { ...set, done: true } : set)),
+        }
+      })
+
+      const currentEntry = updated[currentIndex]
+      const allSetsDone = currentEntry.sets.every((set) => set.done)
+      if (allSetsDone && updated[currentIndex + 1]) {
+        nextExpandedId = updated[currentIndex + 1].id
+      }
+      return updated
+    })
+
+    setExpandedEntryId(nextExpandedId)
   }
 
   const updateSet = (entryId, setIndex, key, value) => {
@@ -210,6 +289,11 @@ export default function App() {
               settings={settings}
               getExerciseTint={getExerciseTint}
               addExercise={addExercise}
+              starterTemplates={STARTER_TEMPLATES}
+              customTemplates={customTemplates}
+              applyTemplate={applyTemplate}
+              saveCurrentTemplate={saveCurrentTemplate}
+              deleteTemplate={deleteTemplate}
             />
 
             {selectedExerciseName && (
@@ -228,6 +312,11 @@ export default function App() {
               <div className={`${sketchCard} p-8 text-center ${subtleText}`}>No exercises added yet. Tap Build today’s workout and add 1–3 movements to start.</div>
             ) : (
               <>
+                {workoutStarted && (
+                  <div className={`${sketchCard} px-4 py-3 text-sm font-bold`}>
+                    {completedExercises} of {entries.length} exercises completed
+                  </div>
+                )}
                 {entries.map((entry) => (
                   <ExerciseCard
                     key={entry.id}
@@ -246,6 +335,8 @@ export default function App() {
                     updateNote={updateNote}
                     nudgeSet={nudgeSet}
                     toggleSetDone={toggleSetDone}
+                    copyPreviousSetValues={copyPreviousSetValues}
+                    completeSetAndNext={completeSetAndNext}
                   />
                 ))}
                 {workoutStarted && <button onClick={saveWorkout} className={`${sketchButton} h-12 w-full text-base`}><Save className="mr-2 inline h-4 w-4" /> Finish workout</button>}

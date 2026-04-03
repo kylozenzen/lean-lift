@@ -1,11 +1,12 @@
 import React from 'react'
-import { CheckCircle2, ChevronDown, ChevronUp, Minus, Plus, Trash2 } from 'lucide-react'
+import { CheckCircle2, ChevronDown, ChevronUp, Copy, Minus, Plus, SkipForward, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui'
 
 export default function ExerciseCard({
   entry, sketchCard, sketchInset, sketchButton, subtleText, dark,
   settings, expanded, onToggle, onRemove, quickAddSet,
   updateSet, updateNote, nudgeSet, toggleSetDone,
+  copyPreviousSetValues, completeSetAndNext,
 }) {
   return (
     <Card className={sketchCard}>
@@ -52,6 +53,15 @@ export default function ExerciseCard({
                   <input value={set.distance} onChange={(e) => updateSet(entry.id, setIndex, 'distance', e.target.value)} placeholder={`Distance (${settings.distanceUnit})`} className={`rounded-2xl ${dark ? 'border-2 border-neutral-100 bg-[#111]' : 'border-2 border-neutral-900 bg-white'} px-3 py-2`} />
                 </div>
               )}
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button className={`${sketchButton} text-xs`} onClick={() => copyPreviousSetValues(entry.id, setIndex)}>
+                  <Copy className="mr-1 inline h-3.5 w-3.5" /> Same as last set
+                </button>
+                <button className={`${sketchButton} text-xs`} onClick={() => completeSetAndNext(entry.id, setIndex)}>
+                  <SkipForward className="mr-1 inline h-3.5 w-3.5" /> Complete set & next
+                </button>
+              </div>
             </div>
           ))}
 

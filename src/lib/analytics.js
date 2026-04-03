@@ -39,36 +39,93 @@ export function getAnalytics(history) {
   }
 }
 
-export function getExerciseHistory(history, exerciseName) {
+export function getExerciseHistory(history, exerciseName, limit = 5) {
+  if (!exerciseName) return []
   const rows = []
   history.forEach((workout) => {
     workout.entries.forEach((entry) => {
       if (entry.name !== exerciseName) return
       if (entry.category === 'Strength') {
-        let bestWeight = 0
-        let bestReps = 0
-        let bestVolume = 0
-        entry.sets.forEach((set) => {
-          const weight = Number(set.weight || 0)
-          const reps = Number(set.reps || 0)
-          const volume = weight * reps
-          bestWeight = Math.max(bestWeight, weight)
-          bestReps = Math.max(bestReps, reps)
-          bestVolume = Math.max(bestVolume, volume)
+        rows.push({
+          date: workout.date,
+          type: 'Strength',
+          ...computeStrengthSessionBests(entry.sets),
         })
-        rows.push({ date: workout.date, type: 'Strength', bestWeight, bestReps, bestVolume })
       } else {
-        let bestDuration = 0
-        let bestDistance = 0
-        entry.sets.forEach((set) => {
-          bestDuration = Math.max(bestDuration, Number(set.duration || 0))
-          bestDistance = Math.max(bestDistance, Number(set.distance || 0))
+        rows.push({
+          date: workout.date,
+          type: 'Cardio',
+          ...computeCardioSessionBests(entry.sets),
         })
-        rows.push({ date: workout.date, type: 'Cardio', bestDuration, bestDistance })
       }
     })
   })
-  return rows.slice(0, 6)
+
+  const sorted = rows.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const recentRows = sorted.slice(0, limit)
+  return recentRows.map((row, index) => ({
+    ...row,
+    trendLabel: getTrendLabel(row, recentRows[index + 1]),
+  }))
+}
+
+export function computeStrengthSessionBests(sets = []) {
+  let bestWeight = 0
+  let bestReps = 0
+  let bestVolume = 0
+  sets.forEach((set) => {
+    const weight = Number(set.weight || 0)
+    const reps = Number(set.reps || 0)
+    const volume = weight * reps
+    bestWeight = Math.max(bestWeight, weight)
+    bestReps = Math.max(bestReps, reps)
+    bestVolume = Math.max(bestVolume, volume)
+  })
+  return { bestWeight, bestReps, bestVolume }
+}
+
+export function computeCardioSessionBests(sets = []) {
+  let bestDuration = 0
+  let bestDistance = 0
+  sets.forEach((set) => {
+    bestDuration = Math.max(bestDuration, Number(set.duration || 0))
+    bestDistance = Math.max(bestDistance, Number(set.distance || 0))
+  })
+  return { bestDuration, bestDistance }
+}
+
+export function getStrengthTrend(current, previous) {
+  if (!previous) return 'Same as last time'
+  const currentVolume = Number(current.bestVolume || 0)
+  const previousVolume = Number(previous.bestVolume || 0)
+  if (currentVolume > previousVolume) return 'Up from last time'
+  if (currentVolume < previousVolume) return 'Down from last time'
+
+  const currentWeight = Number(current.bestWeight || 0)
+  const previousWeight = Number(previous.bestWeight || 0)
+  if (currentWeight > previousWeight) return 'Up from last time'
+  if (currentWeight < previousWeight) return 'Down from last time'
+  return 'Same as last time'
+}
+
+export function getCardioTrend(current, previous) {
+  if (!previous) return 'Same as last time'
+  const distanceDiff = Number(current.bestDistance || 0) - Number(previous.bestDistance || 0)
+  const durationDiff = Number(current.bestDuration || 0) - Number(previous.bestDuration || 0)
+
+  if (Math.abs(distanceDiff) >= Math.abs(durationDiff) && distanceDiff !== 0) {
+    return distanceDiff > 0 ? 'Up from last time' : 'Down from last time'
+  }
+  if (durationDiff !== 0) {
+    return durationDiff > 0 ? 'Up from last time' : 'Down from last time'
+  }
+  return 'Same as last time'
+}
+
+export function getTrendLabel(current, previous) {
+  if (!current || !previous) return 'Same as last time'
+  if (current.type === 'Strength') return getStrengthTrend(current, previous)
+  return getCardioTrend(current, previous)
 }
 
 export function getExerciseTint(exercise, enabled, darkMode) {

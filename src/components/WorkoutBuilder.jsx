@@ -1,12 +1,14 @@
 import React from 'react'
 import { Plus, Play, Search } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui'
+import TemplatePicker from './TemplatePicker'
 
 export default function WorkoutBuilder({
   sketchCard, sketchInset, sketchButton, subtleText, dark,
   summary, workoutStarted, showBuilder, setShowBuilder,
   entries, startWorkout, selectedExerciseName, setSelectedExerciseName,
   query, setQuery, sortedExercises, settings, getExerciseTint, addExercise,
+  starterTemplates, customTemplates, applyTemplate, saveCurrentTemplate, deleteTemplate,
 }) {
   return (
     <Card className={sketchCard}>
@@ -23,6 +25,19 @@ export default function WorkoutBuilder({
 
         {!workoutStarted && (
           <>
+            <TemplatePicker
+              sketchInset={sketchInset}
+              sketchButton={sketchButton}
+              subtleText={subtleText}
+              dark={dark}
+              entries={entries}
+              starterTemplates={starterTemplates}
+              customTemplates={customTemplates}
+              onApplyTemplate={applyTemplate}
+              onSaveCurrentTemplate={saveCurrentTemplate}
+              onDeleteTemplate={deleteTemplate}
+            />
+
             <div className="flex flex-wrap gap-2">
               <button className={sketchButton} onClick={() => setShowBuilder((prev) => !prev)}>{showBuilder ? 'Hide builder' : 'Build today’s workout'}</button>
               {entries.length > 0 && <button className={sketchButton} onClick={startWorkout}><Play className="mr-2 inline h-4 w-4" /> Start workout</button>}
