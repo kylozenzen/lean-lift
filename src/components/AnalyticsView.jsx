@@ -3,6 +3,10 @@ import { BarChart3, TrendingUp } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui'
 
 export default function AnalyticsView({ analytics, sketchCard, sketchInset, sketchButton, subtleText, settings, suggestion, analyticsExpanded, setAnalyticsExpanded, dark }) {
+  function Stat({ title, value }) {
+    return <Card className={sketchCard}><CardContent className="p-4"><p className={`text-xs uppercase tracking-wide ${subtleText}`}>{title}</p><p className="text-2xl font-black">{value}</p></CardContent></Card>
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
@@ -38,9 +42,5 @@ export default function AnalyticsView({ analytics, sketchCard, sketchInset, sket
         </Card>
       )}
     </div>
-
-    function Stat({ title, value }) {
-      return <Card className={sketchCard}><CardContent className="p-4"><p className={`text-xs uppercase tracking-wide ${subtleText}`}>{title}</p><p className="text-2xl font-black">{value}</p></CardContent></Card>
-    }
   )
 }
