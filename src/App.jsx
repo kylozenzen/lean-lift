@@ -71,17 +71,11 @@ export default function App() {
   const selectedHistory = useMemo(() => getExerciseHistory(history, selectedExerciseName), [history, selectedExerciseName])
 
   const dark = settings.darkMode
-  const pageBg = dark ? 'bg-[#101010] text-neutral-100' : 'bg-[#f8f4ea] text-neutral-950'
-  const sketchCard = dark
-    ? 'rounded-[28px] border-2 border-neutral-100 bg-[#151515] shadow-[3px_3px_0px_0px_rgba(255,255,255,0.8)]'
-    : 'rounded-[28px] border-2 border-neutral-900 bg-[#fffdf7] shadow-[3px_3px_0px_0px_rgba(0,0,0,0.9)]'
-  const sketchInset = dark
-    ? 'rounded-[22px] border-2 border-neutral-100 bg-[#181818]'
-    : 'rounded-[22px] border-2 border-neutral-900 bg-white'
-  const sketchButton = dark
-    ? 'rounded-2xl border-2 border-neutral-100 px-3 py-2 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.8)]'
-    : 'rounded-2xl border-2 border-neutral-900 px-3 py-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.9)]'
-  const subtleText = dark ? 'text-neutral-400' : 'text-neutral-500'
+  const pageBg = dark ? 'paper-bg paper-bg-dark' : 'paper-bg'
+  const sketchCard = dark ? 'sketch-card sketch-card-dark' : 'sketch-card'
+  const sketchInset = dark ? 'sketch-inset sketch-inset-dark' : 'sketch-inset'
+  const sketchButton = dark ? 'sketch-button sketch-button-dark' : 'sketch-button'
+  const subtleText = dark ? 'subtle-text-dark' : 'subtle-text'
 
   const addExercise = (exercise) => {
     setEntries((prev) => {
@@ -228,7 +222,7 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen ${pageBg}`} style={{ backgroundImage: dark ? 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)' : 'radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1px, transparent 0)', backgroundSize: '18px 18px' }}>
+    <div className={`min-h-screen ${pageBg}`}>
       <div className="mx-auto max-w-md px-4 py-6 pb-24 sm:max-w-5xl sm:px-6">
         <Header sketchCard={sketchCard} onToggleSettings={() => setShowSettings((v) => !v)} />
 
@@ -239,7 +233,7 @@ export default function App() {
             <CheckCircle2 className="mt-0.5 h-5 w-5" />
             <div>
               <p className="font-bold">Workout saved.</p>
-              <p className={`text-sm ${dark ? 'text-neutral-300' : 'text-neutral-700'}`}>Nice work. Your progress has been logged and your dashboard is updated.</p>
+              <p className={`text-sm ${subtleText}`}>Nice work. Your progress has been logged and your dashboard is updated.</p>
             </div>
             <button className={`${sketchButton} ml-auto`} onClick={() => setShowCompletion(false)}>Dismiss</button>
           </div>
@@ -360,7 +354,7 @@ export default function App() {
           />
         )}
 
-        <div className={`fixed bottom-0 left-0 right-0 ${dark ? 'border-t-2 border-neutral-100 bg-[#151515]/95' : 'border-t-2 border-neutral-900 bg-[#fffdf7]/95'} backdrop-blur`}>
+        <div className={`fixed bottom-0 left-0 right-0 bottom-nav ${dark ? 'bottom-nav-dark' : ''} backdrop-blur`}>
           <div className="mx-auto grid max-w-md grid-cols-3 px-4 py-3 sm:max-w-5xl sm:px-6">
             <TabButton active={activeTab === 'home'} subtleText={subtleText} dark={dark} onClick={() => setActiveTab('home')}><Home className="h-5 w-5" /><span>Home</span></TabButton>
             <TabButton active={activeTab === 'workout'} subtleText={subtleText} dark={dark} onClick={() => setActiveTab('workout')}><Dumbbell className="h-5 w-5" /><span>Workout</span></TabButton>
@@ -374,7 +368,7 @@ export default function App() {
 
 function TabButton({ active, subtleText, dark, onClick, children }) {
   return (
-    <button onClick={onClick} className={`flex flex-col items-center gap-1 text-xs font-bold ${active ? (dark ? 'text-neutral-100' : 'text-neutral-950') : subtleText}`}>
+    <button onClick={onClick} className={`flex flex-col items-center gap-1 text-xs font-bold ${active ? (dark ? 'tab-active-dark' : 'tab-active') : subtleText}`}>
       {children}
     </button>
   )
