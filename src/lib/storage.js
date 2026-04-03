@@ -1,5 +1,12 @@
 export const defaultSet = () => ({ reps: '', weight: '', duration: '', distance: '', done: false })
 
+export const STORAGE_KEYS = {
+  current: 'lean-tracker-current',
+  history: 'lean-tracker-history',
+  settings: 'lean-tracker-settings',
+  templates: 'lean-tracker-templates',
+}
+
 export function getStored(key, fallback) {
   if (typeof window === 'undefined') return fallback
   try {
@@ -13,6 +20,14 @@ export function getStored(key, fallback) {
 export function persist(key, value) {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(key, JSON.stringify(value))
+}
+
+export function getStoredTemplates() {
+  return getStored(STORAGE_KEYS.templates, [])
+}
+
+export function persistTemplates(templates) {
+  persist(STORAGE_KEYS.templates, templates)
 }
 
 export function createId() {
