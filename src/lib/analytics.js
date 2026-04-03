@@ -128,17 +128,17 @@ export function getTrendLabel(current, previous) {
   return getCardioTrend(current, previous)
 }
 
-export function getExerciseTint(exercise, enabled, darkMode) {
-  if (!enabled) return darkMode ? 'bg-[#181818]' : 'bg-white'
+export function getExerciseTint(exercise, enabled) {
+  if (!enabled) return 'tint-none'
   const map = {
-    Chest: darkMode ? 'bg-rose-950/60' : 'bg-rose-100',
-    Back: darkMode ? 'bg-sky-950/60' : 'bg-sky-100',
-    Legs: darkMode ? 'bg-amber-950/60' : 'bg-amber-100',
-    Shoulders: darkMode ? 'bg-violet-950/60' : 'bg-violet-100',
-    Arms: darkMode ? 'bg-emerald-950/60' : 'bg-emerald-100',
-    Core: darkMode ? 'bg-orange-950/60' : 'bg-orange-100',
-    Glutes: darkMode ? 'bg-fuchsia-950/60' : 'bg-fuchsia-100',
-    Cardio: darkMode ? 'bg-cyan-950/60' : 'bg-cyan-100',
+    Chest: 'tint-chest',
+    Back: 'tint-back',
+    Legs: 'tint-legs',
+    Shoulders: 'tint-shoulders',
+    Arms: 'tint-arms',
+    Core: 'tint-core',
+    Glutes: 'tint-glutes',
+    Cardio: 'tint-cardio',
   }
-  return map[exercise.muscle] || (darkMode ? 'bg-[#181818]' : 'bg-white')
+  return map[exercise.muscle] || 'tint-none'
 }

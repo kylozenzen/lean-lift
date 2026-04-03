@@ -4,12 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui'
 import { formatDate } from '../lib/storage'
 
 const trendStyle = {
-  'Up from last time': 'text-emerald-600',
-  'Down from last time': 'text-rose-600',
-  'Same as last time': 'text-amber-600',
+  'Up from last time': 'var(--success)',
+  'Down from last time': '#cb4d6d',
+  'Same as last time': 'var(--muted)',
 }
 
-export default function ExerciseHistoryPanel({ selectedExerciseName, selectedHistory, sketchCard, sketchInset, dark, subtleText, setSelectedExerciseName }) {
+export default function ExerciseHistoryPanel({ selectedExerciseName, selectedHistory, setSelectedExerciseName }) {
   if (!selectedExerciseName) return null
 
   const latest = selectedHistory[0]
@@ -22,51 +22,51 @@ export default function ExerciseHistoryPanel({ selectedExerciseName, selectedHis
   const bestDistance = Math.max(0, ...cardioRows.map((r) => r.bestDistance || 0))
 
   return (
-    <Card className={`${sketchCard} mt-4`}>
+    <Card>
       <CardHeader>
-        <div className="flex items-start justify-between gap-2">
+        <div className="row-between" style={{ alignItems: 'flex-start' }}>
           <div>
-            <CardTitle className="text-lg font-black">{selectedExerciseName} progress</CardTitle>
+            <CardTitle>{selectedExerciseName} progress</CardTitle>
             <CardDescription>Last 5 sessions with simple trend tracking.</CardDescription>
           </div>
-          <button onClick={() => setSelectedExerciseName('')} className="text-sm underline">Close</button>
+          <button onClick={() => setSelectedExerciseName('')} className="secondary-button">Close</button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="section-stack">
         {latest?.type === 'Strength' ? (
-          <div className="grid grid-cols-3 gap-3">
-            <Metric sketchInset={sketchInset} icon={<Trophy className="h-4 w-4" />} label="Best weight" value={bestWeight || '—'} />
-            <Metric sketchInset={sketchInset} icon={<Trophy className="h-4 w-4" />} label="Best reps" value={bestReps || '—'} />
-            <Metric sketchInset={sketchInset} icon={<Flame className="h-4 w-4" />} label="Best volume" value={bestVolume || '—'} />
+          <div className="stat-grid-3">
+            <Metric icon={<Trophy size={14} />} label="Best weight" value={bestWeight || '—'} />
+            <Metric icon={<Trophy size={14} />} label="Best reps" value={bestReps || '—'} />
+            <Metric icon={<Flame size={14} />} label="Best volume" value={bestVolume || '—'} />
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <Metric sketchInset={sketchInset} icon={<Timer className="h-4 w-4" />} label="Best duration" value={bestDuration || '—'} />
-            <Metric sketchInset={sketchInset} icon={<Trophy className="h-4 w-4" />} label="Best distance" value={bestDistance || '—'} />
+          <div className="stat-grid-2">
+            <Metric icon={<Timer size={14} />} label="Best duration" value={bestDuration || '—'} />
+            <Metric icon={<Trophy size={14} />} label="Best distance" value={bestDistance || '—'} />
           </div>
         )}
 
         {latest && (
-          <div className={`${sketchInset} flex items-center justify-between p-3`}>
-            <span className={`text-xs uppercase tracking-wide ${subtleText}`}>Latest trend</span>
-            <span className={`text-sm font-bold ${trendStyle[latest.trendLabel] || subtleText}`}>
-              {latest.trendLabel === 'Up from last time' ? <TrendingUp className="mr-1 inline h-4 w-4" /> : latest.trendLabel === 'Down from last time' ? <TrendingDown className="mr-1 inline h-4 w-4" /> : null}
-              {latest.trendLabel}
+          <div className="card-inset row-between">
+            <span className="label-text">Latest trend</span>
+            <span className="small-text" style={{ color: trendStyle[latest.trendLabel], fontWeight: 700 }}>
+              {latest.trendLabel === 'Up from last time' ? <TrendingUp size={14} /> : latest.trendLabel === 'Down from last time' ? <TrendingDown size={14} /> : null}
+              {' '}{latest.trendLabel}
             </span>
           </div>
         )}
 
         {selectedHistory.length === 0 ? (
-          <p className={`text-sm ${subtleText}`}>No saved history yet for this exercise.</p>
+          <p className="small-text muted-text" style={{ margin: 0 }}>No saved history yet for this exercise.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="list-stack">
             {selectedHistory.map((row, idx) => (
-              <div key={`${row.date}-${idx}`} className={`${sketchInset} p-3`}>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold">{formatDate(row.date)}</span>
-                  <span className={`text-xs font-semibold ${trendStyle[row.trendLabel] || subtleText}`}>{row.trendLabel}</span>
+              <div key={`${row.date}-${idx}`} className="card-inset">
+                <div className="row-between">
+                  <span style={{ fontWeight: 600 }}>{formatDate(row.date)}</span>
+                  <span className="small-text" style={{ color: trendStyle[row.trendLabel], fontWeight: 600 }}>{row.trendLabel}</span>
                 </div>
-                <p className={`${dark ? 'text-neutral-200' : 'text-neutral-700'} mt-1 text-sm`}>
+                <p className="small-text muted-text" style={{ margin: '0.25rem 0 0' }}>
                   {row.type === 'Strength'
                     ? `${row.bestWeight} lb • ${row.bestReps} reps • vol ${row.bestVolume}`
                     : `${row.bestDuration} min • ${row.bestDistance} dist`}
@@ -80,11 +80,11 @@ export default function ExerciseHistoryPanel({ selectedExerciseName, selectedHis
   )
 }
 
-function Metric({ icon, label, value, sketchInset }) {
+function Metric({ icon, label, value }) {
   return (
-    <div className={`${sketchInset} p-3`}>
-      <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-neutral-500">{icon}<span>{label}</span></div>
-      <div className="text-lg font-black">{value}</div>
+    <div className="card-inset stat-card">
+      <div className="label-text" style={{ marginBottom: '0.3rem' }}>{icon} <span>{label}</span></div>
+      <div className="stat-card-value">{value}</div>
     </div>
   )
 }

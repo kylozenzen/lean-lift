@@ -2,10 +2,6 @@ import React, { useMemo, useState } from 'react'
 import { Bookmark, Save, Trash2 } from 'lucide-react'
 
 export default function TemplatePicker({
-  sketchInset,
-  sketchButton,
-  subtleText,
-  dark,
   entries,
   starterTemplates,
   customTemplates,
@@ -25,52 +21,53 @@ export default function TemplatePicker({
   }
 
   return (
-    <div className={`${sketchInset} space-y-3 p-3`}>
+    <div className="card-inset section-stack">
       <div>
-        <p className="text-sm font-bold">Templates</p>
-        <p className={`text-xs ${subtleText}`}>Fast-load splits or save your own recurring plan.</p>
+        <p className="small-text" style={{ margin: 0, fontWeight: 700 }}>Templates</p>
+        <p className="small-text muted-text" style={{ margin: '0.18rem 0 0' }}>Fast-load splits or save your own recurring plan.</p>
       </div>
 
       <div>
-        <p className={`mb-2 text-[11px] font-bold uppercase tracking-wide ${subtleText}`}>Starter templates</p>
-        <div className="grid grid-cols-2 gap-2">
+        <p className="label-text" style={{ margin: '0 0 0.4rem' }}>Starter templates</p>
+        <div className="grid-list-2">
           {starterTemplates.map((template) => (
-            <button key={template.name} className={`${sketchButton} text-left text-sm`} onClick={() => onApplyTemplate(template)}>
-              <Bookmark className="mr-1 inline h-4 w-4" /> {template.name}
+            <button key={template.name} className="secondary-button" onClick={() => onApplyTemplate(template)}>
+              <Bookmark size={14} /> {template.name}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="space-y-2">
-        <p className={`text-[11px] font-bold uppercase tracking-wide ${subtleText}`}>Save current plan</p>
-        <div className="flex gap-2">
+      <div className="section-stack">
+        <p className="label-text" style={{ margin: 0 }}>Save current plan</p>
+        <div className="row-wrap">
           <input
             value={templateName}
             onChange={(e) => setTemplateName(e.target.value)}
             placeholder="Template name"
-            className={`flex-1 rounded-2xl px-3 py-2 ${dark ? 'border-2 border-neutral-100 bg-[#111]' : 'border-2 border-neutral-900 bg-white'}`}
+            className="input-shell"
+            style={{ flex: 1, minWidth: '11rem' }}
           />
-          <button className={sketchButton} disabled={!canSave} onClick={handleSave}>
-            <Save className="mr-1 inline h-4 w-4" /> Save
+          <button className="secondary-button" disabled={!canSave} onClick={handleSave}>
+            <Save size={14} /> Save
           </button>
         </div>
       </div>
 
       {customTemplates.length > 0 && (
         <div>
-          <p className={`mb-2 text-[11px] font-bold uppercase tracking-wide ${subtleText}`}>Your templates</p>
-          <div className="space-y-2">
+          <p className="label-text" style={{ margin: '0 0 0.4rem' }}>Your templates</p>
+          <div className="list-stack">
             {customTemplates.map((template) => (
-              <div key={template.name} className={`flex items-center gap-2 rounded-2xl border-2 px-3 py-2 ${dark ? 'border-neutral-100 bg-[#121212]' : 'border-neutral-900 bg-white'}`}>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold">{template.name}</p>
-                  <p className={`truncate text-xs ${subtleText}`}>{template.exercises.length} exercises</p>
+              <div key={template.name} className="card-inset row-between">
+                <div style={{ minWidth: 0 }}>
+                  <p className="small-text" style={{ margin: 0, fontWeight: 700 }}>{template.name}</p>
+                  <p className="small-text muted-text" style={{ margin: '0.15rem 0 0' }}>{template.exercises.length} exercises</p>
                 </div>
-                <button className={sketchButton} onClick={() => onApplyTemplate(template)}>Apply</button>
-                <button className={sketchButton} onClick={() => onDeleteTemplate(template.name)}>
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <div className="row-wrap" style={{ justifyContent: 'flex-end' }}>
+                  <button className="secondary-button" onClick={() => onApplyTemplate(template)}>Apply</button>
+                  <button className="secondary-button" onClick={() => onDeleteTemplate(template.name)} aria-label={`Delete ${template.name}`}><Trash2 size={14} /></button>
+                </div>
               </div>
             ))}
           </div>

@@ -3,66 +3,83 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui'
 import { RefreshCw } from 'lucide-react'
 
 export default function HomeView({
-  analytics, summary, sketchCard, sketchInset, sketchButton, subtleText,
-  dark, homeExpanded, setHomeExpanded, starterSteps, settings, suggestion,
-  history, formatDate, setActiveTab, movieQuote, nextQuote,
+  analytics,
+  summary,
+  homeExpanded,
+  setHomeExpanded,
+  starterSteps,
+  settings,
+  suggestion,
+  history,
+  formatDate,
+  setActiveTab,
+  movieQuote,
+  nextQuote,
 }) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+    <div className="section-stack">
+      <div className="stat-grid-3">
         <Stat title="Workouts" value={analytics.totalWorkouts} />
         <Stat title="Sets" value={analytics.totalSets} />
         <Stat title="Focus" value={summary.muscles[0] || 'Ready'} />
       </div>
 
-      <Card className={sketchCard}>
-        <button onClick={() => setHomeExpanded((prev) => !prev)} className="w-full text-left">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-3">
+      <Card>
+        <button onClick={() => setHomeExpanded((prev) => !prev)} className="full-width" style={{ textAlign: 'left', background: 'transparent', border: 0, padding: 0 }}>
+          <CardHeader className="card-header-tight">
+            <div className="row-between">
               <div>
-                <CardTitle className="text-lg font-black">Getting started</CardTitle>
+                <CardTitle>Getting started</CardTitle>
                 <CardDescription>Your clean setup, guidance, and recent activity.</CardDescription>
               </div>
-              <span className={subtleText}>{homeExpanded ? '−' : '+'}</span>
+              <span className="muted-text">{homeExpanded ? '−' : '+'}</span>
             </div>
           </CardHeader>
         </button>
+
         {homeExpanded && (
-          <CardContent className="space-y-3 pt-0">
+          <CardContent className="card-content-tight section-stack">
             {starterSteps.map((step, index) => (
-              <div key={step} className={`${sketchInset} flex items-start gap-3 p-3`}>
-                <div className={`flex h-7 w-7 items-center justify-center rounded-full ${dark ? 'border-2 border-neutral-100 bg-neutral-800 text-neutral-100' : 'border-2 border-neutral-900 bg-[#fff7cc] text-neutral-900'} text-sm font-black`}>{index + 1}</div>
-                <p className={`pt-1 text-sm ${dark ? 'text-neutral-200' : 'text-neutral-700'}`}>{step}</p>
+              <div key={step} className="card-inset row-wrap" style={{ alignItems: 'flex-start' }}>
+                <div className="badge-shell" style={{ minWidth: '1.7rem', fontWeight: 700 }}>{index + 1}</div>
+                <p className="small-text" style={{ margin: '0.15rem 0 0' }}>{step}</p>
               </div>
             ))}
-            {settings.smartMode && <p className={`${sketchInset} p-3 text-sm ${dark ? 'text-neutral-200' : 'text-neutral-700'}`}>{suggestion}</p>}
-            <div className="space-y-2">
-              <p className={`text-sm font-bold ${dark ? 'text-neutral-200' : 'text-neutral-700'}`}>Recent activity</p>
-              {history.length === 0 ? <p className={`text-sm ${subtleText}`}>No workouts saved yet.</p> : history.slice(0, 3).map((workout) => (
-                <div key={workout.id} className={`${sketchInset} p-3`}>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-bold">{formatDate(workout.date)}</p>
-                    <span className="rounded-full border px-2 py-1 text-xs">{workout.entries.length} exercises</span>
-                  </div>
+
+            {settings.smartMode && <p className="card-inset small-text" style={{ margin: 0 }}>{suggestion}</p>}
+
+            <div>
+              <p className="small-text" style={{ margin: '0 0 0.5rem', fontWeight: 700 }}>Recent activity</p>
+              {history.length === 0 ? (
+                <p className="small-text muted-text" style={{ margin: 0 }}>No workouts saved yet.</p>
+              ) : (
+                <div className="list-stack">
+                  {history.slice(0, 3).map((workout) => (
+                    <div key={workout.id} className="card-inset row-between">
+                      <p style={{ margin: 0, fontWeight: 600 }}>{formatDate(workout.date)}</p>
+                      <span className="badge-shell">{workout.entries.length} exercises</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-            <div className="flex gap-2 pt-1">
-              <button className={sketchButton} onClick={() => setActiveTab('workout')}>Build today’s workout</button>
-              <button className={sketchButton} onClick={() => setActiveTab('analytics')}>View analytics</button>
+
+            <div className="row-wrap">
+              <button className="primary-button" onClick={() => setActiveTab('workout')}>Build today’s workout</button>
+              <button className="secondary-button" onClick={() => setActiveTab('analytics')}>View analytics</button>
             </div>
           </CardContent>
         )}
       </Card>
 
-      <Card className={sketchCard}>
+      <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-black">Movie quote mode</CardTitle>
+          <CardTitle>Movie quote mode</CardTitle>
           <CardDescription>Notebook energy, blockbuster pep talk.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <p className={`text-sm leading-6 ${dark ? 'text-neutral-200' : 'text-neutral-700'}`}>{movieQuote}</p>
-          <button className={sketchButton} onClick={nextQuote}><RefreshCw className="mr-2 inline h-4 w-4" /> New quote</button>
+        <CardContent className="section-stack">
+          <p className="small-text" style={{ lineHeight: 1.55, margin: 0 }}>{movieQuote}</p>
+          <button className="secondary-button" onClick={nextQuote}><RefreshCw size={14} /> New quote</button>
         </CardContent>
       </Card>
     </div>
@@ -70,12 +87,10 @@ export default function HomeView({
 
   function Stat({ title, value }) {
     return (
-      <Card className={sketchCard}>
-        <CardContent className="p-4">
-          <p className={`text-[11px] uppercase tracking-wide ${subtleText}`}>{title}</p>
-          <p className="text-2xl font-black">{value}</p>
-        </CardContent>
-      </Card>
+      <div className="card-shell stat-card card-content">
+        <p className="stat-card-label">{title}</p>
+        <p className="stat-card-value">{value}</p>
+      </div>
     )
   }
 }

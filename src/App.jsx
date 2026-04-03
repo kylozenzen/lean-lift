@@ -70,13 +70,6 @@ export default function App() {
   const analytics = useMemo(() => getAnalytics(history), [history])
   const selectedHistory = useMemo(() => getExerciseHistory(history, selectedExerciseName), [history, selectedExerciseName])
 
-  const dark = settings.darkMode
-  const pageBg = dark ? 'paper-bg paper-bg-dark' : 'paper-bg'
-  const sketchCard = dark ? 'sketch-card sketch-card-dark' : 'sketch-card'
-  const sketchInset = dark ? 'sketch-inset sketch-inset-dark' : 'sketch-inset'
-  const sketchButton = dark ? 'sketch-button sketch-button-dark' : 'sketch-button'
-  const subtleText = dark ? 'subtle-text-dark' : 'subtle-text'
-
   const addExercise = (exercise) => {
     setEntries((prev) => {
       const existing = prev.find((entry) => entry.name === exercise.name)
@@ -202,12 +195,14 @@ export default function App() {
     setEntries((prev) => prev.filter((entry) => entry.id !== entryId))
     if (expandedEntryId === entryId) setExpandedEntryId(null)
   }
+
   const startWorkout = () => {
     if (!entries.length) return
     setWorkoutStarted(true)
     setShowBuilder(false)
     setExpandedEntryId(entries[0]?.id || null)
   }
+
   const saveWorkout = () => {
     if (!entries.length) return
     const workout = { id: createId(), date: new Date().toISOString(), entries }
@@ -222,20 +217,20 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen ${pageBg}`}>
-      <div className="mx-auto max-w-md px-4 py-6 pb-24 sm:max-w-5xl sm:px-6">
-        <Header sketchCard={sketchCard} onToggleSettings={() => setShowSettings((v) => !v)} />
+    <div className={`app-shell ${settings.darkMode ? 'theme-dark' : ''}`}>
+      <div className="page-wrap">
+        <Header onToggleSettings={() => setShowSettings((v) => !v)} />
 
-        {showSettings && <SettingsPanel sketchCard={sketchCard} sketchInset={sketchInset} settings={settings} setSettings={setSettings} />}
+        {showSettings && <SettingsPanel settings={settings} setSettings={setSettings} />}
 
         {showCompletion && (
-          <div className={`${sketchCard} mb-4 p-4 flex items-start gap-3`}>
-            <CheckCircle2 className="mt-0.5 h-5 w-5" />
+          <div className="card-shell card-content completion-banner">
+            <CheckCircle2 size={18} />
             <div>
-              <p className="font-bold">Workout saved.</p>
-              <p className={`text-sm ${subtleText}`}>Nice work. Your progress has been logged and your dashboard is updated.</p>
+              <p className="card-title">Workout saved.</p>
+              <p className="small-text muted-text">Nice work. Your progress has been logged and your dashboard is updated.</p>
             </div>
-            <button className={`${sketchButton} ml-auto`} onClick={() => setShowCompletion(false)}>Dismiss</button>
+            <button className="secondary-button" onClick={() => setShowCompletion(false)}>Dismiss</button>
           </div>
         )}
 
@@ -243,11 +238,6 @@ export default function App() {
           <HomeView
             analytics={analytics}
             summary={summary}
-            sketchCard={sketchCard}
-            sketchInset={sketchInset}
-            sketchButton={sketchButton}
-            subtleText={subtleText}
-            dark={dark}
             homeExpanded={homeExpanded}
             setHomeExpanded={setHomeExpanded}
             starterSteps={STARTER_STEPS}
@@ -262,13 +252,8 @@ export default function App() {
         )}
 
         {activeTab === 'workout' && (
-          <div className="space-y-4">
+          <div className="section-stack">
             <WorkoutBuilder
-              sketchCard={sketchCard}
-              sketchInset={sketchInset}
-              sketchButton={sketchButton}
-              subtleText={subtleText}
-              dark={dark}
               summary={summary}
               workoutStarted={workoutStarted}
               showBuilder={showBuilder}
@@ -294,20 +279,16 @@ export default function App() {
               <ExerciseHistoryPanel
                 selectedExerciseName={selectedExerciseName}
                 selectedHistory={selectedHistory}
-                sketchCard={sketchCard}
-                sketchInset={sketchInset}
-                dark={dark}
-                subtleText={subtleText}
                 setSelectedExerciseName={setSelectedExerciseName}
               />
             )}
 
             {entries.length === 0 ? (
-              <div className={`${sketchCard} p-8 text-center ${subtleText}`}>No exercises added yet. Tap Build today’s workout and add 1–3 movements to start.</div>
+              <div className="card-shell card-content muted-text">No exercises added yet. Tap Build today’s workout and add 1–3 movements to start.</div>
             ) : (
               <>
                 {workoutStarted && (
-                  <div className={`${sketchCard} px-4 py-3 text-sm font-bold`}>
+                  <div className="card-shell card-content small-text">
                     {completedExercises} of {entries.length} exercises completed
                   </div>
                 )}
@@ -315,11 +296,6 @@ export default function App() {
                   <ExerciseCard
                     key={entry.id}
                     entry={entry}
-                    sketchCard={sketchCard}
-                    sketchInset={sketchInset}
-                    sketchButton={sketchButton}
-                    subtleText={subtleText}
-                    dark={dark}
                     settings={settings}
                     expanded={expandedEntryId === entry.id}
                     onToggle={() => setExpandedEntryId(expandedEntryId === entry.id ? null : entry.id)}
@@ -333,7 +309,11 @@ export default function App() {
                     completeSetAndNext={completeSetAndNext}
                   />
                 ))}
-                {workoutStarted && <button onClick={saveWorkout} className={`${sketchButton} h-12 w-full text-base`}><Save className="mr-2 inline h-4 w-4" /> Finish workout</button>}
+                {workoutStarted && (
+                  <button onClick={saveWorkout} className="primary-button full-width">
+                    <Save size={16} /> Finish workout
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -342,33 +322,28 @@ export default function App() {
         {activeTab === 'analytics' && (
           <AnalyticsView
             analytics={analytics}
-            sketchCard={sketchCard}
-            sketchInset={sketchInset}
-            sketchButton={sketchButton}
-            subtleText={subtleText}
             settings={settings}
             suggestion={suggestion}
             analyticsExpanded={analyticsExpanded}
             setAnalyticsExpanded={setAnalyticsExpanded}
-            dark={dark}
           />
         )}
+      </div>
 
-        <div className={`fixed bottom-0 left-0 right-0 bottom-nav ${dark ? 'bottom-nav-dark' : ''} backdrop-blur`}>
-          <div className="mx-auto grid max-w-md grid-cols-3 px-4 py-3 sm:max-w-5xl sm:px-6">
-            <TabButton active={activeTab === 'home'} subtleText={subtleText} dark={dark} onClick={() => setActiveTab('home')}><Home className="h-5 w-5" /><span>Home</span></TabButton>
-            <TabButton active={activeTab === 'workout'} subtleText={subtleText} dark={dark} onClick={() => setActiveTab('workout')}><Dumbbell className="h-5 w-5" /><span>Workout</span></TabButton>
-            <TabButton active={activeTab === 'analytics'} subtleText={subtleText} dark={dark} onClick={() => setActiveTab('analytics')}><BarChart3 className="h-5 w-5" /><span>Analytics</span></TabButton>
-          </div>
+      <div className="tab-bar">
+        <div className="tab-grid">
+          <TabButton active={activeTab === 'home'} onClick={() => setActiveTab('home')}><Home size={19} /><span>Home</span></TabButton>
+          <TabButton active={activeTab === 'workout'} onClick={() => setActiveTab('workout')}><Dumbbell size={19} /><span>Workout</span></TabButton>
+          <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')}><BarChart3 size={19} /><span>Analytics</span></TabButton>
         </div>
       </div>
     </div>
   )
 }
 
-function TabButton({ active, subtleText, dark, onClick, children }) {
+function TabButton({ active, onClick, children }) {
   return (
-    <button onClick={onClick} className={`flex flex-col items-center gap-1 text-xs font-bold ${active ? (dark ? 'tab-active-dark' : 'tab-active') : subtleText}`}>
+    <button onClick={onClick} className={`tab-button ${active ? 'is-active' : ''}`}>
       {children}
     </button>
   )
