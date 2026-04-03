@@ -11,6 +11,7 @@ import { EXERCISES, MOVIE_QUOTES, STARTER_STEPS, DEFAULT_SETTINGS } from './lib/
 import { createId, defaultSet, getStored, getStoredTemplates, persist, persistTemplates, STORAGE_KEYS } from './lib/storage'
 import { getAnalytics, getExerciseHistory, getExerciseTint, getSuggestion } from './lib/analytics'
 import { STARTER_TEMPLATES } from './lib/templates'
+import { completeSetAndGetNextEntryId, createCopiedSet, getLastExerciseSetFromHistory, getSetValuePatch } from './lib/workout'
 
 export default function App() {
   const [entries, setEntries] = useState([])
@@ -109,28 +110,25 @@ export default function App() {
     setEntries((prev) => prev.map((entry) => {
       if (entry.id !== entryId) return entry
       const lastSet = entry.sets[entry.sets.length - 1] || defaultSet()
-      const copied = entry.category === 'Strength'
-        ? { ...defaultSet(), weight: lastSet.weight || '', reps: lastSet.reps || '' }
-        : { ...defaultSet(), duration: lastSet.duration || '', distance: lastSet.distance || '' }
-      return { ...entry, sets: [...entry.sets, copied] }
+      return { ...entry, sets: [...entry.sets, createCopiedSet(entry.category, lastSet)] }
     }))
   }
 
   const copyPreviousSetValues = (entryId, setIndex) => {
-    if (setIndex < 1) return
     setEntries((prev) => prev.map((entry) => {
       if (entry.id !== entryId) return entry
-      const previousSet = entry.sets[setIndex - 1]
+
+      const previousSet = setIndex > 0
+        ? entry.sets[setIndex - 1]
+        : getLastExerciseSetFromHistory(history, entry.name)
+
       if (!previousSet) return entry
 
       return {
         ...entry,
-        sets: entry.sets.map((set, index) => {
-          if (index !== setIndex) return set
-          return entry.category === 'Strength'
-            ? { ...set, weight: previousSet.weight || '', reps: previousSet.reps || '' }
-            : { ...set, duration: previousSet.duration || '', distance: previousSet.distance || '' }
-        }),
+        sets: entry.sets.map((set, index) => (index === setIndex
+          ? { ...set, ...getSetValuePatch(entry.category, previousSet) }
+          : set)),
       }
     }))
   }
@@ -158,29 +156,11 @@ export default function App() {
   }
 
   const completeSetAndNext = (entryId, setIndex) => {
-    let nextExpandedId = entryId
-
     setEntries((prev) => {
-      const currentIndex = prev.findIndex((entry) => entry.id === entryId)
-      if (currentIndex < 0) return prev
-
-      const updated = prev.map((entry, index) => {
-        if (index !== currentIndex) return entry
-        return {
-          ...entry,
-          sets: entry.sets.map((set, idx) => (idx === setIndex ? { ...set, done: true } : set)),
-        }
-      })
-
-      const currentEntry = updated[currentIndex]
-      const allSetsDone = currentEntry.sets.every((set) => set.done)
-      if (allSetsDone && updated[currentIndex + 1]) {
-        nextExpandedId = updated[currentIndex + 1].id
-      }
-      return updated
+      const { updatedEntries, nextExpandedId } = completeSetAndGetNextEntryId(prev, entryId, setIndex)
+      setExpandedEntryId(nextExpandedId)
+      return updatedEntries
     })
-
-    setExpandedEntryId(nextExpandedId)
   }
 
   const updateSet = (entryId, setIndex, key, value) => {
@@ -307,6 +287,7 @@ export default function App() {
                     toggleSetDone={toggleSetDone}
                     copyPreviousSetValues={copyPreviousSetValues}
                     completeSetAndNext={completeSetAndNext}
+                    isActiveInWorkout={workoutStarted && expandedEntryId === entry.id}
                   />
                 ))}
                 {workoutStarted && (

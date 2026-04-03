@@ -93,6 +93,11 @@ button { cursor: pointer; }
   box-shadow: var(--shadow-card);
 }
 
+
+.active-workout-card {
+  border-width: 2px;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--success) 38%, transparent), var(--shadow-card);
+}
 .card-header,
 .card-content { padding: 0.95rem; }
 .card-header-tight { padding-bottom: 0.45rem; }
