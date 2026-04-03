@@ -35,3 +35,20 @@ export const STARTER_TEMPLATES = [
     exercises: ['Treadmill', 'Rowing Machine', 'Elliptical'],
   },
 ]
+
+export function dedupeExerciseNames(exerciseNames = []) {
+  return [...new Set(exerciseNames.filter(Boolean))]
+}
+
+export function mergeTemplateExercisesIntoPlan(currentEntries, template, allExercises, createEntryFromExercise) {
+  const existingNames = new Set(currentEntries.map((entry) => entry.name))
+  const templateNames = dedupeExerciseNames(template?.exercises || [])
+
+  const additions = templateNames
+    .map((exerciseName) => allExercises.find((exercise) => exercise.name === exerciseName))
+    .filter(Boolean)
+    .filter((exercise) => !existingNames.has(exercise.name))
+    .map((exercise) => createEntryFromExercise(exercise))
+
+  return [...currentEntries, ...additions]
+}
