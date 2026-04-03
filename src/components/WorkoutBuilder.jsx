@@ -27,8 +27,8 @@ export default function WorkoutBuilder({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Build today’s workout</CardTitle>
-        <CardDescription>Tap + to build your plan. Keep it light until you actually start.</CardDescription>
+        <CardTitle>{workoutStarted ? 'Workout in progress' : 'Build today’s workout'}</CardTitle>
+        <CardDescription>{workoutStarted ? 'Logging mode is live. Stay focused and finish strong.' : 'Tap + to build your plan. Keep it light until you actually start.'}</CardDescription>
       </CardHeader>
       <CardContent className="section-stack">
         <div className="stat-grid-3">

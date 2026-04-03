@@ -15,9 +15,10 @@ export default function ExerciseCard({
   toggleSetDone,
   copyPreviousSetValues,
   completeSetAndNext,
+  isActiveInWorkout,
 }) {
   return (
-    <Card>
+    <Card className={isActiveInWorkout ? 'active-workout-card' : undefined}>
       <CardHeader className="card-header-tight">
         <div className="row-between" style={{ alignItems: 'flex-start' }}>
           <button onClick={onToggle} className="full-width" style={{ textAlign: 'left', background: 'transparent', border: 0, padding: 0 }}>
@@ -64,7 +65,7 @@ export default function ExerciseCard({
 
               <div className="stat-grid-2" style={{ marginTop: '0.55rem' }}>
                 <button className="secondary-button" onClick={() => copyPreviousSetValues(entry.id, setIndex)}>
-                  <Copy size={13} /> Same as last set
+                  <Copy size={13} /> {setIndex === 0 ? 'Same as last workout' : 'Same as last set'}
                 </button>
                 <button className="secondary-button" onClick={() => completeSetAndNext(entry.id, setIndex)}>
                   <SkipForward size={13} /> Complete & next
