@@ -1,7 +1,6 @@
 import React from 'react'
 import { Plus, Play, Search } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui'
-import TemplatePicker from './TemplatePicker'
 
 export default function WorkoutBuilder({
   summary,
@@ -18,11 +17,7 @@ export default function WorkoutBuilder({
   settings,
   getExerciseTint,
   addExercise,
-  starterTemplates,
-  customTemplates,
-  applyTemplate,
-  saveCurrentTemplate,
-  deleteTemplate,
+  onOpenTemplates,
 }) {
   return (
     <Card>
@@ -39,16 +34,8 @@ export default function WorkoutBuilder({
 
         {!workoutStarted && (
           <>
-            <TemplatePicker
-              entries={entries}
-              starterTemplates={starterTemplates}
-              customTemplates={customTemplates}
-              onApplyTemplate={applyTemplate}
-              onSaveCurrentTemplate={saveCurrentTemplate}
-              onDeleteTemplate={deleteTemplate}
-            />
-
             <div className="row-wrap">
+              <button className="secondary-button" onClick={onOpenTemplates}>Templates</button>
               <button className="secondary-button" onClick={() => setShowBuilder((prev) => !prev)}>{showBuilder ? 'Hide builder' : 'Build today’s workout'}</button>
               {entries.length > 0 && <button className="primary-button" onClick={startWorkout}><Play size={14} /> Start workout</button>}
             </div>

@@ -8,9 +8,20 @@ import ExerciseCard from './components/ExerciseCard'
 import ExerciseHistoryPanel from './components/ExerciseHistoryPanel'
 import AnalyticsView from './components/AnalyticsView'
 import { EXERCISES, MOVIE_QUOTES, STARTER_STEPS, DEFAULT_SETTINGS } from './lib/exercises'
-import { createId, defaultSet, getStored, getStoredTemplates, persist, persistTemplates, STORAGE_KEYS } from './lib/storage'
+import {
+  createId,
+  defaultSet,
+  deleteCustomTemplate,
+  getStored,
+  getStoredTemplates,
+  persist,
+  persistTemplates,
+  saveCustomTemplate,
+  STORAGE_KEYS,
+} from './lib/storage'
 import { getAnalytics, getExerciseHistory, getExerciseTint, getSuggestion } from './lib/analytics'
-import { STARTER_TEMPLATES } from './lib/templates'
+import TemplateOverlay from './components/TemplateOverlay'
+import { mergeTemplateExercisesIntoPlan, STARTER_TEMPLATES } from './lib/templates'
 import { completeSetAndGetNextEntryId, createCopiedSet, getLastExerciseSetFromHistory, getSetValuePatch } from './lib/workout'
 
 export default function App() {
@@ -29,6 +40,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [selectedExerciseName, setSelectedExerciseName] = useState('')
   const [customTemplates, setCustomTemplates] = useState([])
+  const [showTemplates, setShowTemplates] = useState(false)
 
   useEffect(() => {
     setEntries(getStored(STORAGE_KEYS.current, []))
@@ -81,29 +93,20 @@ export default function App() {
   }
 
   const applyTemplate = (template) => {
-    setEntries((prev) => {
-      const existingNames = new Set(prev.map((entry) => entry.name))
-      const additions = template.exercises
-        .map((exerciseName) => EXERCISES.find((exercise) => exercise.name === exerciseName))
-        .filter(Boolean)
-        .filter((exercise) => !existingNames.has(exercise.name))
-        .map((exercise) => ({ id: createId(), ...exercise, sets: [defaultSet()], note: '' }))
-
-      return [...prev, ...additions]
-    })
+    setEntries((prev) => mergeTemplateExercisesIntoPlan(
+      prev,
+      template,
+      EXERCISES,
+      (exercise) => ({ id: createId(), ...exercise, sets: [defaultSet()], note: '' })
+    ))
   }
 
   const saveCurrentTemplate = (name, exerciseNames) => {
-    setCustomTemplates((prev) => {
-      const deduped = exerciseNames.filter((exercise, index) => exerciseNames.indexOf(exercise) === index)
-      const nextTemplate = { name, exercises: deduped, source: 'custom' }
-      const remaining = prev.filter((template) => template.name.toLowerCase() !== name.toLowerCase())
-      return [nextTemplate, ...remaining]
-    })
+    setCustomTemplates((prev) => saveCustomTemplate(prev, name, exerciseNames))
   }
 
   const deleteTemplate = (templateName) => {
-    setCustomTemplates((prev) => prev.filter((template) => template.name !== templateName))
+    setCustomTemplates((prev) => deleteCustomTemplate(prev, templateName))
   }
 
   const quickAddSet = (entryId) => {
@@ -248,11 +251,20 @@ export default function App() {
               settings={settings}
               getExerciseTint={getExerciseTint}
               addExercise={addExercise}
+              onOpenTemplates={() => setShowTemplates(true)}
+            />
+
+
+
+            <TemplateOverlay
+              open={showTemplates}
+              onClose={() => setShowTemplates(false)}
+              entries={entries}
               starterTemplates={STARTER_TEMPLATES}
               customTemplates={customTemplates}
-              applyTemplate={applyTemplate}
-              saveCurrentTemplate={saveCurrentTemplate}
-              deleteTemplate={deleteTemplate}
+              onApplyTemplate={applyTemplate}
+              onSaveCurrentTemplate={saveCurrentTemplate}
+              onDeleteTemplate={deleteTemplate}
             />
 
             {selectedExerciseName && (

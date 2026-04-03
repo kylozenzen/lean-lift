@@ -1,3 +1,5 @@
+import { dedupeExerciseNames } from './templates'
+
 export const defaultSet = () => ({ reps: '', weight: '', duration: '', distance: '', done: false })
 
 export const STORAGE_KEYS = {
@@ -22,12 +24,41 @@ export function persist(key, value) {
   window.localStorage.setItem(key, JSON.stringify(value))
 }
 
+function normalizeCustomTemplate(template) {
+  const name = template?.name?.trim()
+  if (!name) return null
+
+  return {
+    name,
+    source: 'custom',
+    exercises: dedupeExerciseNames(template.exercises || []),
+  }
+}
+
 export function getStoredTemplates() {
-  return getStored(STORAGE_KEYS.templates, [])
+  const templates = getStored(STORAGE_KEYS.templates, [])
+  if (!Array.isArray(templates)) return []
+  return templates.map(normalizeCustomTemplate).filter(Boolean)
 }
 
 export function persistTemplates(templates) {
-  persist(STORAGE_KEYS.templates, templates)
+  const normalized = (templates || []).map(normalizeCustomTemplate).filter(Boolean)
+  persist(STORAGE_KEYS.templates, normalized)
+}
+
+export function saveCustomTemplate(existingTemplates, name, exerciseNames) {
+  const nextTemplate = normalizeCustomTemplate({ name, exercises: exerciseNames, source: 'custom' })
+  if (!nextTemplate) return existingTemplates
+
+  const remaining = existingTemplates.filter(
+    (template) => template.name.toLowerCase() !== nextTemplate.name.toLowerCase()
+  )
+
+  return [nextTemplate, ...remaining]
+}
+
+export function deleteCustomTemplate(existingTemplates, templateName) {
+  return existingTemplates.filter((template) => template.name !== templateName)
 }
 
 export function createId() {

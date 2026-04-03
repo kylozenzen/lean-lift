@@ -326,7 +326,46 @@ button { cursor: pointer; }
 .theme-dark .tint-glutes { background: #3a2234; }
 .theme-dark .tint-cardio { background: #1f373c; }
 
+
+
+.overlay-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(22, 18, 13, 0.48);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.8rem;
+}
+
+.template-overlay {
+  width: min(100%, 34rem);
+  max-height: 88vh;
+  overflow: hidden;
+}
+
+.template-overlay-content {
+  overflow-y: auto;
+  max-height: calc(88vh - 5.5rem);
+}
+
+.template-row {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.template-custom-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+}
+
 @media (min-width: 720px) {
   .page-wrap { padding: 1.4rem 1.35rem 5.5rem; }
   .section-stack > * + * { margin-top: 0.95rem; }
+  .overlay-scrim {
+    align-items: center;
+    padding: 1.25rem;
+  }
 }
